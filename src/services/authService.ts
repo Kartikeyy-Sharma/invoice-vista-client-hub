@@ -11,7 +11,10 @@ export const login = async (username: string, password: string): Promise<User | 
       .eq('password', password)
       .single();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      console.error('Login error:', error);
+      return null;
+    }
 
     const user: User = {
       id: data.id,
@@ -34,7 +37,10 @@ export const checkUsernameAvailable = async (username: string): Promise<boolean>
       .select('id')
       .eq('username', username);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error checking username availability:', error);
+      throw error;
+    }
     
     // Username is available if no records found
     return data.length === 0;
@@ -47,7 +53,12 @@ export const checkUsernameAvailable = async (username: string): Promise<boolean>
 export const getCurrentUser = (): User | null => {
   const userJson = localStorage.getItem('currentUser');
   if (userJson) {
-    return JSON.parse(userJson);
+    try {
+      return JSON.parse(userJson);
+    } catch (e) {
+      console.error('Error parsing user from localStorage:', e);
+      return null;
+    }
   }
   return null;
 };

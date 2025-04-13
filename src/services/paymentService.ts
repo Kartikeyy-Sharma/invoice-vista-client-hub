@@ -10,7 +10,14 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
       .select('*')
       .eq('invoice_id', invoiceId);
 
-    if (error || !data) return [];
+    if (error) {
+      console.error('Error in getPaymentsByInvoiceId:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
 
     return data.map(payment => ({
       id: payment.id,
@@ -26,7 +33,7 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
   }
 };
 
-export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment> => {
+export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment | null> => {
   try {
     const { data, error } = await supabase
       .from('payments')
@@ -41,7 +48,8 @@ export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
       .single();
 
     if (error || !data) {
-      throw new Error('Failed to create payment');
+      console.error('Failed to create payment:', error);
+      return null;
     }
 
     // Check if this payment completes the invoice amount
@@ -65,6 +73,6 @@ export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
     };
   } catch (error) {
     console.error('Error in createPayment:', error);
-    throw error;
+    return null;
   }
 };

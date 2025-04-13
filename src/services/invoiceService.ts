@@ -10,15 +10,18 @@ export const getClientById = async (clientId: number): Promise<Client | undefine
       .eq('id', clientId)
       .single();
 
-    if (error || !data) return undefined;
+    if (error || !data) {
+      console.error('Error in getClientById:', error);
+      return undefined;
+    }
 
     return {
       id: data.id,
       name: data.name,
       email: data.email,
-      phone: data.phone,
-      address: data.address,
-      company: data.company
+      phone: data.phone || '',
+      address: data.address || '',
+      company: data.company || ''
     };
   } catch (error) {
     console.error('Error in getClientById:', error);
@@ -33,7 +36,14 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
       .select('*')
       .eq('client_id', clientId);
 
-    if (error || !data) return [];
+    if (error) {
+      console.error('Error in getInvoicesByClientId:', error);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
 
     return data.map(invoice => ({
       id: invoice.id,
@@ -42,7 +52,7 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
       dueDate: invoice.due_date,
       issueDate: invoice.issue_date,
       status: invoice.status as 'pending' | 'paid' | 'overdue',
-      description: invoice.description
+      description: invoice.description || ''
     }));
   } catch (error) {
     console.error('Error in getInvoicesByClientId:', error);
@@ -58,7 +68,10 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
       .eq('id', invoiceId)
       .single();
 
-    if (error || !data) return undefined;
+    if (error || !data) {
+      console.error('Error in getInvoiceById:', error);
+      return undefined;
+    }
 
     return {
       id: data.id,
@@ -67,7 +80,7 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
       dueDate: data.due_date,
       issueDate: data.issue_date,
       status: data.status as 'pending' | 'paid' | 'overdue',
-      description: data.description
+      description: data.description || ''
     };
   } catch (error) {
     console.error('Error in getInvoiceById:', error);
@@ -81,9 +94,12 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
       .from('notifications')
       .select('*')
       .eq('invoice_id', invoiceId)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return undefined;
+    if (error || !data) {
+      console.error('Error in getNotificationByInvoiceId:', error);
+      return undefined;
+    }
 
     return {
       id: data.id,
@@ -98,7 +114,7 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
   }
 };
 
-export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' | 'paid' | 'overdue'): Promise<void> => {
+export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' | 'paid' | 'overdue'): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('invoices')
@@ -107,8 +123,52 @@ export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' |
 
     if (error) {
       console.error('Error in updateInvoiceStatus:', error);
+      return false;
     }
+    
+    return true;
   } catch (error) {
     console.error('Error in updateInvoiceStatus:', error);
+    return false;
+  }
+};
+
+// Function to create a test invoice (for debugging)
+export const createTestInvoice = async (clientId: number): Promise<Invoice | undefined> => {
+  try {
+    const today = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(today.getDate() + 30);
+    
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert({
+        client_id: clientId,
+        amount: 999.99,
+        issue_date: today.toISOString().split('T')[0],
+        due_date: dueDate.toISOString().split('T')[0],
+        status: 'pending',
+        description: 'Test invoice'
+      })
+      .select()
+      .single();
+      
+    if (error || !data) {
+      console.error('Error creating test invoice:', error);
+      return undefined;
+    }
+    
+    return {
+      id: data.id,
+      clientId: data.client_id,
+      amount: data.amount,
+      dueDate: data.due_date,
+      issueDate: data.issue_date,
+      status: data.status as 'pending' | 'paid' | 'overdue',
+      description: data.description || ''
+    };
+  } catch (error) {
+    console.error('Error creating test invoice:', error);
+    return undefined;
   }
 };

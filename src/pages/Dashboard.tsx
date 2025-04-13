@@ -1,12 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Layout from '@/components/layout/Layout';
 import ClientInfo from '@/components/dashboard/ClientInfo';
 import InvoiceList from '@/components/dashboard/InvoiceList';
 import { Client, Invoice, Notification } from '@/types';
 import { getCurrentUser } from '@/services/authService';
-import { getClientById, getInvoicesByClientId, getNotificationByInvoiceId } from '@/services/invoiceService';
+import { getClientById, getInvoicesByClientId, getNotificationByInvoiceId, createTestInvoice } from '@/services/invoiceService';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -15,42 +18,68 @@ const Dashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<Record<number, Notification | undefined>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const user = getCurrentUser();
-      
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-      
-      try {
-        // Fetch client info
-        const clientData = await getClientById(user.clientId);
-        if (clientData) {
-          setClient(clientData);
-        }
-        
-        // Fetch invoices
-        const invoicesData = await getInvoicesByClientId(user.clientId);
-        setInvoices(invoicesData);
-        
-        // Fetch notifications for each invoice
-        const notificationsData: Record<number, Notification | undefined> = {};
-        for (const invoice of invoicesData) {
-          const notification = await getNotificationByInvoiceId(invoice.id);
-          notificationsData[invoice.id] = notification;
-        }
-        setNotifications(notificationsData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    const user = getCurrentUser();
     
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      // Fetch client info
+      const clientData = await getClientById(user.clientId);
+      if (clientData) {
+        setClient(clientData);
+      } else {
+        toast.error("Could not load client information");
+      }
+      
+      // Fetch invoices
+      const invoicesData = await getInvoicesByClientId(user.clientId);
+      setInvoices(invoicesData);
+      
+      // Fetch notifications for each invoice
+      const notificationsData: Record<number, Notification | undefined> = {};
+      for (const invoice of invoicesData) {
+        const notification = await getNotificationByInvoiceId(invoice.id);
+        notificationsData[invoice.id] = notification;
+      }
+      setNotifications(notificationsData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error("Error loading dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchData();
   }, [navigate]);
+
+  const handleCreateTestInvoice = async () => {
+    const user = getCurrentUser();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const newInvoice = await createTestInvoice(user.clientId);
+      if (newInvoice) {
+        toast.success("Test invoice created successfully");
+        // Refresh the data
+        fetchData();
+      } else {
+        toast.error("Failed to create test invoice");
+      }
+    } catch (error) {
+      console.error('Error creating test invoice:', error);
+      toast.error("Error creating test invoice");
+    }
+  };
 
   if (loading) {
     return (
@@ -79,7 +108,13 @@ const Dashboard: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Your Dashboard</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Your Dashboard</h1>
+          <Button onClick={handleCreateTestInvoice}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Test Invoice
+          </Button>
+        </div>
         <ClientInfo client={client} />
         <InvoiceList invoices={invoices} notifications={notifications} />
       </div>
