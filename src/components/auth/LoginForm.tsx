@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { CreditCard, AlertCircle } from 'lucide-react';
+import { CreditCard, AlertCircle, UserPlus } from 'lucide-react';
 import { login, setCurrentUser } from '@/services/authService';
 import { useToast } from '@/components/ui/use-toast';
 
-const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  onSwitchMode: () => void;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSwitchMode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -103,7 +107,13 @@ const LoginForm: React.FC = () => {
           </div>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col gap-4">
+        <div className="flex items-center justify-center w-full">
+          <Button variant="outline" onClick={onSwitchMode} className="w-full" type="button">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Create Account
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground text-center w-full">
           For demo: Use username "client1" and password "password1"
         </p>

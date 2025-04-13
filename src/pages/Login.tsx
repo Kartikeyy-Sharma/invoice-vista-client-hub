@@ -1,11 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
+import SignupForm from '@/components/auth/SignupForm';
 import { getCurrentUser } from '@/services/authService';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   
   useEffect(() => {
     // Check if user is already logged in
@@ -22,7 +24,12 @@ const Login: React.FC = () => {
         <p className="text-center text-muted-foreground mb-8">
           Client Invoice and Payment Management System
         </p>
-        <LoginForm />
+        
+        {authMode === 'login' ? (
+          <LoginForm onSwitchMode={() => setAuthMode('signup')} />
+        ) : (
+          <SignupForm onSwitchMode={() => setAuthMode('login')} />
+        )}
       </div>
     </div>
   );

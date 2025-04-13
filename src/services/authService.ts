@@ -27,6 +27,23 @@ export const login = async (username: string, password: string): Promise<User | 
   }
 };
 
+export const checkUsernameAvailable = async (username: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username);
+
+    if (error) throw error;
+    
+    // Username is available if no records found
+    return data.length === 0;
+  } catch (error) {
+    console.error('Error checking username availability:', error);
+    return false;
+  }
+};
+
 export const getCurrentUser = (): User | null => {
   const userJson = localStorage.getItem('currentUser');
   if (userJson) {
