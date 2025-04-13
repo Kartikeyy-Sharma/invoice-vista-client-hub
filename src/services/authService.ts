@@ -6,10 +6,13 @@ export const login = async (username: string, password: string): Promise<User | 
   try {
     // First, we need to find the user's email by username from our profiles table
     const { data: profileData, error: profileError } = await supabase
-      .from('profiles' as any)
+      .from('profiles')
       .select('id, username, client_id')
       .eq('username', username)
-      .single();
+      .single() as unknown as { 
+        data: { id: string; username: string; client_id: number } | null; 
+        error: any; 
+      };
     
     if (profileError || !profileData) {
       console.error('Error fetching profile:', profileError);

@@ -6,9 +6,19 @@ import { getInvoiceById, updateInvoiceStatus } from './invoiceService';
 export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment[]> => {
   try {
     const { data, error } = await supabase
-      .from('payments' as any)
+      .from('payments')
       .select('*')
-      .eq('invoice_id', invoiceId);
+      .eq('invoice_id', invoiceId) as unknown as { 
+        data: { 
+          id: number; 
+          invoice_id: number; 
+          amount_paid: number; 
+          payment_method: 'credit card' | 'bank transfer' | 'UPI'; 
+          date: string;
+          time: string
+        }[] | null; 
+        error: any 
+      };
     
     if (error) {
       console.error('Error fetching payments:', error);
@@ -33,17 +43,29 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
 
 export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment> => {
   try {
+    const paymentData = {
+      invoice_id: payment.invoiceId,
+      amount_paid: payment.amountPaid,
+      payment_method: payment.paymentMethod,
+      date: payment.date,
+      time: payment.time
+    };
+
     const { data, error } = await supabase
-      .from('payments' as any)
-      .insert({
-        invoice_id: payment.invoiceId,
-        amount_paid: payment.amountPaid,
-        payment_method: payment.paymentMethod,
-        date: payment.date,
-        time: payment.time
-      })
+      .from('payments')
+      .insert(paymentData as any)
       .select()
-      .single();
+      .single() as unknown as { 
+        data: { 
+          id: number; 
+          invoice_id: number; 
+          amount_paid: number; 
+          payment_method: 'credit card' | 'bank transfer' | 'UPI'; 
+          date: string; 
+          time: string 
+        } | null; 
+        error: any 
+      };
     
     if (error) {
       console.error('Error creating payment:', error);
