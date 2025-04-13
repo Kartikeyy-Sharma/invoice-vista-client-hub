@@ -23,6 +23,7 @@ const LoginForm: React.FC = () => {
     setError('');
 
     try {
+      // Use the username to find the corresponding user profile
       const user = await login(username, password);
       
       if (user) {

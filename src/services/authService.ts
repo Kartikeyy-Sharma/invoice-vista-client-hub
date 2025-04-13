@@ -1,23 +1,30 @@
 
+import { supabase } from '@/integrations/supabase/client';
 import { User } from '../types';
 
-// Mock database for users
-const users = [
-  { id: 1, username: 'client1', password: 'password1', clientId: 1 },
-  { id: 2, username: 'client2', password: 'password2', clientId: 2 },
-];
-
 export const login = async (username: string, password: string): Promise<User | null> => {
-  // In a real app, you would hash passwords and check against the database
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  if (user) {
-    // Don't return the password
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword as User;
+  try {
+    // First, we need to find the user's email by username from our profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, username, client_id')
+      .eq('username', username)
+      .single();
+    
+    if (profileError || !profileData) {
+      console.error('Error fetching profile:', profileError);
+      return null;
+    }
+    
+    return {
+      id: parseInt(profileData.id.toString().substring(0, 8), 16), // Convert UUID to a number for compatibility
+      username: profileData.username,
+      clientId: profileData.client_id
+    };
+  } catch (error) {
+    console.error('Login error:', error);
+    return null;
   }
-  
-  return null;
 };
 
 export const getCurrentUser = (): User | null => {
@@ -32,6 +39,6 @@ export const setCurrentUser = (user: User): void => {
   localStorage.setItem('currentUser', JSON.stringify(user));
 };
 
-export const logout = (): void => {
+export const logout = async (): Promise<void> => {
   localStorage.removeItem('currentUser');
 };

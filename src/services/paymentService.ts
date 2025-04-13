@@ -1,44 +1,65 @@
 
+import { supabase } from '@/integrations/supabase/client';
 import { Payment } from '../types';
 import { getInvoiceById, updateInvoiceStatus } from './invoiceService';
 
-// Mock data
-let payments: Payment[] = [
-  {
-    id: 1,
-    invoiceId: 2,
-    amountPaid: 800.00,
-    paymentMethod: 'credit card',
-    date: '2023-11-10',
-    time: '14:30'
-  }
-];
-
 export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment[]> => {
-  return payments.filter(payment => payment.invoiceId === invoiceId);
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('invoice_id', invoiceId);
+    
+    if (error) {
+      console.error('Error fetching payments:', error);
+      return [];
+    }
+    
+    return data.map(payment => ({
+      id: payment.id,
+      invoiceId: payment.invoice_id,
+      amountPaid: payment.amount_paid,
+      paymentMethod: payment.payment_method as 'credit card' | 'bank transfer' | 'UPI',
+      date: payment.date,
+      time: payment.time
+    }));
+  } catch (error) {
+    console.error('Error in getPaymentsByInvoiceId:', error);
+    return [];
+  }
 };
 
 export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment> => {
-  const newPayment = {
-    ...payment,
-    id: payments.length + 1,
-  };
-  
-  payments.push(newPayment);
-  
-  // Get the invoice
-  const invoice = await getInvoiceById(payment.invoiceId);
-  
-  if (invoice) {
-    // Calculate total payments for this invoice
-    const invoicePayments = await getPaymentsByInvoiceId(payment.invoiceId);
-    const totalPaid = invoicePayments.reduce((sum, p) => sum + p.amountPaid, 0);
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .insert({
+        invoice_id: payment.invoiceId,
+        amount_paid: payment.amountPaid,
+        payment_method: payment.paymentMethod,
+        date: payment.date,
+        time: payment.time
+      })
+      .select()
+      .single();
     
-    // If total paid equals or exceeds the invoice amount, mark as paid
-    if (totalPaid >= invoice.amount) {
-      await updateInvoiceStatus(payment.invoiceId, 'paid');
+    if (error) {
+      console.error('Error creating payment:', error);
+      throw new Error(error.message);
     }
+    
+    // The trigger in the database will automatically update the invoice status if needed
+    
+    return {
+      id: data.id,
+      invoiceId: data.invoice_id,
+      amountPaid: data.amount_paid,
+      paymentMethod: data.payment_method as 'credit card' | 'bank transfer' | 'UPI',
+      date: data.date,
+      time: data.time
+    };
+  } catch (error) {
+    console.error('Error in createPayment:', error);
+    throw error;
   }
-  
-  return newPayment;
 };
