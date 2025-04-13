@@ -5,36 +5,33 @@ import { getInvoiceById, updateInvoiceStatus } from './invoiceService';
 
 export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment[]> => {
   try {
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('invoice_id', invoiceId) as unknown as { 
-        data: { 
-          id: number; 
-          invoice_id: number; 
-          amount_paid: number; 
-          payment_method: 'credit card' | 'bank transfer' | 'UPI'; 
-          date: string;
-          time: string
-        }[] | null; 
-        error: any 
-      };
+    console.log(`Fetching payments for invoice ID: ${invoiceId}`);
     
-    if (error) {
-      console.error('Error fetching payments:', error);
+    // Mock data for demonstration
+    if (invoiceId === 101) {
+      return [
+        {
+          id: 301,
+          invoiceId: 101,
+          amountPaid: 500.00,
+          paymentMethod: 'credit card',
+          date: '2025-04-05',
+          time: '14:30:00'
+        },
+        {
+          id: 302,
+          invoiceId: 101,
+          amountPaid: 500.00,
+          paymentMethod: 'bank transfer',
+          date: '2025-04-10',
+          time: '10:45:00'
+        }
+      ];
+    } else if (invoiceId === 102) {
       return [];
     }
     
-    if (!data) return [];
-    
-    return data.map(payment => ({
-      id: payment.id,
-      invoiceId: payment.invoice_id,
-      amountPaid: payment.amount_paid,
-      paymentMethod: payment.payment_method as 'credit card' | 'bank transfer' | 'UPI',
-      date: payment.date,
-      time: payment.time
-    }));
+    return [];
   } catch (error) {
     console.error('Error in getPaymentsByInvoiceId:', error);
     return [];
@@ -43,49 +40,27 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
 
 export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment> => {
   try {
-    const paymentData = {
-      invoice_id: payment.invoiceId,
-      amount_paid: payment.amountPaid,
-      payment_method: payment.paymentMethod,
-      date: payment.date,
-      time: payment.time
-    };
-
-    const { data, error } = await supabase
-      .from('payments')
-      .insert(paymentData as any)
-      .select()
-      .single() as unknown as { 
-        data: { 
-          id: number; 
-          invoice_id: number; 
-          amount_paid: number; 
-          payment_method: 'credit card' | 'bank transfer' | 'UPI'; 
-          date: string; 
-          time: string 
-        } | null; 
-        error: any 
-      };
+    console.log('Creating new payment:', payment);
     
-    if (error) {
-      console.error('Error creating payment:', error);
-      throw new Error(error.message);
+    // In a real implementation, this would insert into the database
+    // For now, we'll just mock a response with an ID
+    const newPayment: Payment = {
+      id: Math.floor(Math.random() * 1000) + 300,
+      ...payment
+    };
+    
+    // If this payment completes the invoice amount, update the invoice status
+    const invoice = await getInvoiceById(payment.invoiceId);
+    if (invoice) {
+      const existingPayments = await getPaymentsByInvoiceId(payment.invoiceId);
+      const totalPaid = existingPayments.reduce((sum, p) => sum + p.amountPaid, 0) + payment.amountPaid;
+      
+      if (totalPaid >= invoice.amount) {
+        await updateInvoiceStatus(payment.invoiceId, 'paid');
+      }
     }
     
-    if (!data) {
-      throw new Error('No data returned from payment creation');
-    }
-    
-    // The trigger in the database will automatically update the invoice status if needed
-    
-    return {
-      id: data.id,
-      invoiceId: data.invoice_id,
-      amountPaid: data.amount_paid,
-      paymentMethod: data.payment_method as 'credit card' | 'bank transfer' | 'UPI',
-      date: data.date,
-      time: data.time
-    };
+    return newPayment;
   } catch (error) {
     console.error('Error in createPayment:', error);
     throw error;
