@@ -10,6 +10,10 @@ import { getCurrentUser } from '@/services/authService';
 import { getClientById, getInvoicesByClientId, getNotificationByInvoiceId, createTestInvoice } from '@/services/invoiceService';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +21,12 @@ const Dashboard: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [notifications, setNotifications] = useState<Record<number, Notification | undefined>>({});
   const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [testInvoice, setTestInvoice] = useState({
+    amount: 999.99,
+    description: 'Test invoice',
+    dueInDays: 30
+  });
 
   const fetchData = async () => {
     setLoading(true);
@@ -67,9 +77,16 @@ const Dashboard: React.FC = () => {
     }
     
     try {
-      const newInvoice = await createTestInvoice(user.clientId);
+      const newInvoice = await createTestInvoice(
+        user.clientId,
+        testInvoice.amount,
+        testInvoice.description,
+        testInvoice.dueInDays
+      );
+      
       if (newInvoice) {
         toast.success("Test invoice created successfully");
+        setOpenDialog(false);
         // Refresh the data
         fetchData();
       } else {
@@ -110,13 +127,66 @@ const Dashboard: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Your Dashboard</h1>
-          <Button onClick={handleCreateTestInvoice}>
+          <Button onClick={() => setOpenDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Test Invoice
           </Button>
         </div>
         <ClientInfo client={client} />
         <InvoiceList invoices={invoices} notifications={notifications} />
+        
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create Test Invoice</DialogTitle>
+              <DialogDescription>
+                Add details for your test invoice. Click save when you're done.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="amount" className="text-right">
+                  Amount
+                </Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={testInvoice.amount}
+                  onChange={(e) => setTestInvoice({...testInvoice, amount: parseFloat(e.target.value)})}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="dueInDays" className="text-right">
+                  Due in (days)
+                </Label>
+                <Input
+                  id="dueInDays"
+                  type="number"
+                  value={testInvoice.dueInDays}
+                  onChange={(e) => setTestInvoice({...testInvoice, dueInDays: parseInt(e.target.value)})}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={testInvoice.description}
+                  onChange={(e) => setTestInvoice({...testInvoice, description: e.target.value})}
+                  className="col-span-3"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleCreateTestInvoice}>Create Invoice</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

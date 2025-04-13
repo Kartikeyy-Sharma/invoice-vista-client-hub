@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Invoice, Client } from '@/types';
 import StatusBadge from '../dashboard/StatusBadge';
 import { formatCurrency } from '@/lib/utils';
-import { CalendarIcon, FileText, DollarSign, ClipboardList } from 'lucide-react';
+import { CalendarIcon, FileText, IndianRupee, ClipboardList } from 'lucide-react';
 
 interface InvoiceDetailsProps {
   invoice: Invoice;
@@ -66,7 +66,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, client }) => {
               
               <div className="bg-muted p-4 rounded-md mt-4">
                 <div className="flex items-center">
-                  <DollarSign className="h-5 w-5 mr-2 text-primary" />
+                  <IndianRupee className="h-5 w-5 mr-2 text-primary" />
                   <span className="text-lg font-semibold">Amount Due</span>
                 </div>
                 <div className="text-2xl font-bold mt-1">{formatCurrency(invoice.amount)}</div>
@@ -90,11 +90,21 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, client }) => {
                 <tbody>
                   <tr>
                     <td className="py-3 px-4 border-t border-muted-foreground/20">{invoice.description}</td>
-                    <td className="py-3 px-4 text-right border-t border-muted-foreground/20">{formatCurrency(invoice.amount)}</td>
+                    <td className="py-3 px-4 text-right border-t border-muted-foreground/20">
+                      <div className="flex items-center justify-end">
+                        <IndianRupee className="h-3.5 w-3.5 mr-1" />
+                        {formatCurrency(invoice.amount).replace('₹', '')}
+                      </div>
+                    </td>
                   </tr>
                   <tr className="bg-muted-foreground/5">
                     <td className="py-3 px-4 font-medium">Total</td>
-                    <td className="py-3 px-4 text-right font-bold">{formatCurrency(invoice.amount)}</td>
+                    <td className="py-3 px-4 text-right font-bold">
+                      <div className="flex items-center justify-end">
+                        <IndianRupee className="h-3.5 w-3.5 mr-1" />
+                        {formatCurrency(invoice.amount).replace('₹', '')}
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>

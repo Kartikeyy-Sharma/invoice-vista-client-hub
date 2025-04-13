@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Invoice, Notification } from '@/types';
 import StatusBadge from './StatusBadge';
-import { Eye, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, AlertCircle, CheckCircle2, IndianRupee } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface InvoiceListProps {
@@ -48,6 +48,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, notifications }) =>
               <TableRow>
                 <TableHead>Invoice #</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead>Issue Date</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Status</TableHead>
@@ -59,7 +60,13 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, notifications }) =>
               {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium">INV-{invoice.id.toString().padStart(4, '0')}</TableCell>
-                  <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+                  <TableCell className="flex items-center">
+                    <IndianRupee className="h-3.5 w-3.5 mr-1" />
+                    {formatCurrency(invoice.amount).replace('₹', '')}
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={invoice.description}>
+                    {invoice.description}
+                  </TableCell>
                   <TableCell>{formatDate(invoice.issueDate)}</TableCell>
                   <TableCell>
                     <div className="flex items-center">

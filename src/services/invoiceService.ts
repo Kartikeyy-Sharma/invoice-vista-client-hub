@@ -96,8 +96,12 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
       .eq('invoice_id', invoiceId)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
       console.error('Error in getNotificationByInvoiceId:', error);
+      return undefined;
+    }
+
+    if (!data) {
       return undefined;
     }
 
@@ -133,22 +137,27 @@ export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' |
   }
 };
 
-// Function to create a test invoice (for debugging)
-export const createTestInvoice = async (clientId: number): Promise<Invoice | undefined> => {
+// Function to create a test invoice with enhanced details
+export const createTestInvoice = async (
+  clientId: number, 
+  amount: number = 999.99, 
+  description: string = 'Test invoice',
+  dueInDays: number = 30
+): Promise<Invoice | undefined> => {
   try {
     const today = new Date();
     const dueDate = new Date();
-    dueDate.setDate(today.getDate() + 30);
+    dueDate.setDate(today.getDate() + dueInDays);
     
     const { data, error } = await supabase
       .from('invoices')
       .insert({
         client_id: clientId,
-        amount: 999.99,
+        amount: amount,
         issue_date: today.toISOString().split('T')[0],
         due_date: dueDate.toISOString().split('T')[0],
         status: 'pending',
-        description: 'Test invoice'
+        description: description
       })
       .select()
       .single();

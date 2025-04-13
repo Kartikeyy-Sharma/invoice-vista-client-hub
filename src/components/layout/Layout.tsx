@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogOut, CreditCard, FileText, Home } from 'lucide-react';
 import { logout } from '@/services/authService';
@@ -11,6 +11,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -38,16 +39,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4">
           <div className="flex space-x-4 py-2">
             <Button 
-              variant="ghost" 
-              className="text-gray-600 hover:text-primary"
+              variant={location.pathname === '/dashboard' ? 'default' : 'ghost'} 
+              className={location.pathname === '/dashboard' ? 'text-white' : 'text-gray-600 hover:text-primary'}
               onClick={() => navigate('/dashboard')}
             >
               <Home className="h-4 w-4 mr-2" />
               Dashboard
             </Button>
             <Button 
-              variant="ghost" 
-              className="text-gray-600 hover:text-primary"
+              variant={location.pathname.includes('/invoice') ? 'default' : 'ghost'} 
+              className={location.pathname.includes('/invoice') ? 'text-white' : 'text-gray-600 hover:text-primary'}
               onClick={() => navigate('/dashboard')}
             >
               <FileText className="h-4 w-4 mr-2" />
