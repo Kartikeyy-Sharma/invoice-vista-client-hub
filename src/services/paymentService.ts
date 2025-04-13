@@ -16,7 +16,7 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
       id: payment.id,
       invoiceId: payment.invoice_id,
       amountPaid: payment.amount_paid,
-      paymentMethod: payment.payment_method,
+      paymentMethod: payment.payment_method as 'credit card' | 'bank transfer' | 'UPI',
       date: payment.date,
       time: payment.time
     }));
@@ -59,7 +59,7 @@ export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
       id: data.id,
       invoiceId: data.invoice_id,
       amountPaid: data.amount_paid,
-      paymentMethod: data.payment_method,
+      paymentMethod: data.payment_method as 'credit card' | 'bank transfer' | 'UPI',
       date: data.date,
       time: data.time
     };

@@ -41,7 +41,7 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
       amount: invoice.amount,
       dueDate: invoice.due_date,
       issueDate: invoice.issue_date,
-      status: invoice.status,
+      status: invoice.status as 'pending' | 'paid' | 'overdue',
       description: invoice.description
     }));
   } catch (error) {
@@ -66,7 +66,7 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
       amount: data.amount,
       dueDate: data.due_date,
       issueDate: data.issue_date,
-      status: data.status,
+      status: data.status as 'pending' | 'paid' | 'overdue',
       description: data.description
     };
   } catch (error) {
@@ -88,9 +88,9 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
     return {
       id: data.id,
       invoiceId: data.invoice_id,
-      status: data.status,
+      status: data.status as 'sent' | 'pending',
       date: data.date,
-      channel: data.channel
+      channel: data.channel as 'email' | 'sms'
     };
   } catch (error) {
     console.error('Error in getNotificationByInvoiceId:', error);
