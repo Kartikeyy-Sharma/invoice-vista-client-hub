@@ -4,23 +4,23 @@ import { User } from '../types';
 
 export const login = async (username: string, password: string): Promise<User | null> => {
   try {
-    // Since the table might not exist yet, we'll mock a response
-    console.log(`Attempted login with username: ${username}`);
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, client_id')
+      .eq('username', username)
+      .eq('password', password)
+      .single();
+
+    if (error || !data) return null;
+
+    const user: User = {
+      id: data.id,
+      username: data.username,
+      clientId: data.client_id
+    };
     
-    // Mock a user for demonstration purposes
-    if (username === 'demo' && password === 'password') {
-      const user: User = {
-        id: 1001,
-        username: 'demo',
-        clientId: 1
-      };
-      
-      // Store user in localStorage
-      setCurrentUser(user);
-      return user;
-    }
-    
-    return null;
+    setCurrentUser(user);
+    return user;
   } catch (error) {
     console.error('Login error:', error);
     return null;

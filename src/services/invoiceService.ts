@@ -1,24 +1,25 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Invoice, Notification, Client } from '@/types';
+import { Client, Invoice, Notification } from '@/types';
 
 export const getClientById = async (clientId: number): Promise<Client | undefined> => {
   try {
-    console.log(`Fetching client with ID: ${clientId}`);
-    
-    // Mock data for demonstration
-    if (clientId === 1) {
-      return {
-        id: 1,
-        name: 'Acme Corporation',
-        email: 'contact@acme.com',
-        phone: '555-123-4567',
-        address: '123 Business Ave, Suite 100, City, ST 12345',
-        company: 'Acme Corporation'
-      };
-    }
-    
-    return undefined;
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('id', clientId)
+      .single();
+
+    if (error || !data) return undefined;
+
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      company: data.company
+    };
   } catch (error) {
     console.error('Error in getClientById:', error);
     return undefined;
@@ -27,33 +28,22 @@ export const getClientById = async (clientId: number): Promise<Client | undefine
 
 export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]> => {
   try {
-    console.log(`Fetching invoices for client ID: ${clientId}`);
-    
-    // Mock data for demonstration
-    if (clientId === 1) {
-      return [
-        {
-          id: 101,
-          clientId: 1,
-          amount: 1500.00,
-          dueDate: '2025-05-15',
-          issueDate: '2025-04-01',
-          status: 'pending',
-          description: 'Website development services - April 2025'
-        },
-        {
-          id: 102,
-          clientId: 1,
-          amount: 800.00,
-          dueDate: '2025-04-30',
-          issueDate: '2025-04-10',
-          status: 'overdue',
-          description: 'Maintenance services - March 2025'
-        }
-      ];
-    }
-    
-    return [];
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('client_id', clientId);
+
+    if (error || !data) return [];
+
+    return data.map(invoice => ({
+      id: invoice.id,
+      clientId: invoice.client_id,
+      amount: invoice.amount,
+      dueDate: invoice.due_date,
+      issueDate: invoice.issue_date,
+      status: invoice.status,
+      description: invoice.description
+    }));
   } catch (error) {
     console.error('Error in getInvoicesByClientId:', error);
     return [];
@@ -62,32 +52,23 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
 
 export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undefined> => {
   try {
-    console.log(`Fetching invoice with ID: ${invoiceId}`);
-    
-    // Mock data for demonstration
-    if (invoiceId === 101) {
-      return {
-        id: 101,
-        clientId: 1,
-        amount: 1500.00,
-        dueDate: '2025-05-15',
-        issueDate: '2025-04-01',
-        status: 'pending',
-        description: 'Website development services - April 2025'
-      };
-    } else if (invoiceId === 102) {
-      return {
-        id: 102,
-        clientId: 1,
-        amount: 800.00,
-        dueDate: '2025-04-30',
-        issueDate: '2025-04-10',
-        status: 'overdue',
-        description: 'Maintenance services - March 2025'
-      };
-    }
-    
-    return undefined;
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .single();
+
+    if (error || !data) return undefined;
+
+    return {
+      id: data.id,
+      clientId: data.client_id,
+      amount: data.amount,
+      dueDate: data.due_date,
+      issueDate: data.issue_date,
+      status: data.status,
+      description: data.description
+    };
   } catch (error) {
     console.error('Error in getInvoiceById:', error);
     return undefined;
@@ -96,28 +77,21 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
 
 export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Notification | undefined> => {
   try {
-    console.log(`Fetching notification for invoice ID: ${invoiceId}`);
-    
-    // Mock data for demonstration
-    if (invoiceId === 101) {
-      return {
-        id: 201,
-        invoiceId: 101,
-        status: 'sent',
-        date: '2025-04-02',
-        channel: 'email'
-      };
-    } else if (invoiceId === 102) {
-      return {
-        id: 202,
-        invoiceId: 102,
-        status: 'pending',
-        date: '2025-04-11',
-        channel: 'sms'
-      };
-    }
-    
-    return undefined;
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('invoice_id', invoiceId)
+      .single();
+
+    if (error || !data) return undefined;
+
+    return {
+      id: data.id,
+      invoiceId: data.invoice_id,
+      status: data.status,
+      date: data.date,
+      channel: data.channel
+    };
   } catch (error) {
     console.error('Error in getNotificationByInvoiceId:', error);
     return undefined;
@@ -126,8 +100,14 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
 
 export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' | 'paid' | 'overdue'): Promise<void> => {
   try {
-    console.log(`Updating invoice ${invoiceId} status to: ${status}`);
-    // In a real implementation, this would update the database
+    const { error } = await supabase
+      .from('invoices')
+      .update({ status })
+      .eq('id', invoiceId);
+
+    if (error) {
+      console.error('Error in updateInvoiceStatus:', error);
+    }
   } catch (error) {
     console.error('Error in updateInvoiceStatus:', error);
   }

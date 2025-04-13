@@ -9,7 +9,167 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          address: string | null
+          company: string | null
+          email: string
+          id: number
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          company?: string | null
+          email: string
+          id?: number
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          company?: string | null
+          email?: string
+          id?: number
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_id: number
+          description: string | null
+          due_date: string
+          id: number
+          issue_date: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          client_id: number
+          description?: string | null
+          due_date: string
+          id?: number
+          issue_date: string
+          status: string
+        }
+        Update: {
+          amount?: number
+          client_id?: number
+          description?: string | null
+          due_date?: string
+          id?: number
+          issue_date?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          channel: string
+          date: string
+          id: number
+          invoice_id: number
+          status: string
+        }
+        Insert: {
+          channel: string
+          date: string
+          id?: number
+          invoice_id: number
+          status: string
+        }
+        Update: {
+          channel?: string
+          date?: string
+          id?: number
+          invoice_id?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_paid: number
+          date: string
+          id: number
+          invoice_id: number
+          payment_method: string
+          time: string
+        }
+        Insert: {
+          amount_paid: number
+          date: string
+          id?: number
+          invoice_id: number
+          payment_method: string
+          time: string
+        }
+        Update: {
+          amount_paid?: number
+          date?: string
+          id?: number
+          invoice_id?: number
+          payment_method?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          client_id: number
+          id: number
+          password: string
+          username: string
+        }
+        Insert: {
+          client_id: number
+          id?: number
+          password: string
+          username: string
+        }
+        Update: {
+          client_id?: number
+          id?: number
+          password?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
