@@ -5,7 +5,7 @@ import { Invoice, Notification, Client } from '@/types';
 export const getClientById = async (clientId: number): Promise<Client | undefined> => {
   try {
     const { data, error } = await supabase
-      .from('clients')
+      .from('clients' as any)
       .select('*')
       .eq('id', clientId)
       .single();
@@ -14,6 +14,8 @@ export const getClientById = async (clientId: number): Promise<Client | undefine
       console.error('Error fetching client:', error);
       return undefined;
     }
+    
+    if (!data) return undefined;
     
     return {
       id: data.id,
@@ -32,7 +34,7 @@ export const getClientById = async (clientId: number): Promise<Client | undefine
 export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]> => {
   try {
     const { data, error } = await supabase
-      .from('invoices')
+      .from('invoices' as any)
       .select('*')
       .eq('client_id', clientId);
     
@@ -40,6 +42,8 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
       console.error('Error fetching invoices:', error);
       return [];
     }
+    
+    if (!data) return [];
     
     return data.map(invoice => ({
       id: invoice.id,
@@ -59,7 +63,7 @@ export const getInvoicesByClientId = async (clientId: number): Promise<Invoice[]
 export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undefined> => {
   try {
     const { data, error } = await supabase
-      .from('invoices')
+      .from('invoices' as any)
       .select('*')
       .eq('id', invoiceId)
       .single();
@@ -68,6 +72,8 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
       console.error('Error fetching invoice:', error);
       return undefined;
     }
+    
+    if (!data) return undefined;
     
     return {
       id: data.id,
@@ -87,7 +93,7 @@ export const getInvoiceById = async (invoiceId: number): Promise<Invoice | undef
 export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Notification | undefined> => {
   try {
     const { data, error } = await supabase
-      .from('notifications')
+      .from('notifications' as any)
       .select('*')
       .eq('invoice_id', invoiceId)
       .single();
@@ -96,6 +102,8 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
       console.error('Error fetching notification:', error);
       return undefined;
     }
+    
+    if (!data) return undefined;
     
     return {
       id: data.id,
@@ -113,7 +121,7 @@ export const getNotificationByInvoiceId = async (invoiceId: number): Promise<Not
 export const updateInvoiceStatus = async (invoiceId: number, status: 'pending' | 'paid' | 'overdue'): Promise<void> => {
   try {
     const { error } = await supabase
-      .from('invoices')
+      .from('invoices' as any)
       .update({ status })
       .eq('id', invoiceId);
     

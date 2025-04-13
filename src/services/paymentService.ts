@@ -6,7 +6,7 @@ import { getInvoiceById, updateInvoiceStatus } from './invoiceService';
 export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment[]> => {
   try {
     const { data, error } = await supabase
-      .from('payments')
+      .from('payments' as any)
       .select('*')
       .eq('invoice_id', invoiceId);
     
@@ -14,6 +14,8 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
       console.error('Error fetching payments:', error);
       return [];
     }
+    
+    if (!data) return [];
     
     return data.map(payment => ({
       id: payment.id,
@@ -32,7 +34,7 @@ export const getPaymentsByInvoiceId = async (invoiceId: number): Promise<Payment
 export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payment> => {
   try {
     const { data, error } = await supabase
-      .from('payments')
+      .from('payments' as any)
       .insert({
         invoice_id: payment.invoiceId,
         amount_paid: payment.amountPaid,
@@ -46,6 +48,10 @@ export const createPayment = async (payment: Omit<Payment, 'id'>): Promise<Payme
     if (error) {
       console.error('Error creating payment:', error);
       throw new Error(error.message);
+    }
+    
+    if (!data) {
+      throw new Error('No data returned from payment creation');
     }
     
     // The trigger in the database will automatically update the invoice status if needed
