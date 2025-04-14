@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -138,7 +137,7 @@ const InvoiceDetails: React.FC = () => {
           <h1 className="text-3xl font-bold">Invoice Details</h1>
         </div>
         
-        <InvoiceDetailsComponent invoice={invoice} client={client} />
+        <InvoiceDetailsComponent invoice={invoice} client={client} payments={payments} />
         <PaymentHistory payments={payments} invoiceAmount={invoice.amount} />
         {invoice.status !== 'paid' && (
           <PaymentForm 

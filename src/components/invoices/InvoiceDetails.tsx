@@ -5,13 +5,15 @@ import { Invoice, Client } from '@/types';
 import StatusBadge from '../dashboard/StatusBadge';
 import { formatCurrency } from '@/lib/utils';
 import { CalendarIcon, FileText, IndianRupee, ClipboardList } from 'lucide-react';
+import DownloadInvoicePDF from './DownloadInvoicePDF';
 
 interface InvoiceDetailsProps {
   invoice: Invoice;
   client: Client;
+  payments: Payment[];
 }
 
-const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, client }) => {
+const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, client, payments }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -28,7 +30,10 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, client }) => {
           <FileText className="h-5 w-5 mr-2 text-primary" />
           Invoice #{invoice.id.toString().padStart(4, '0')}
         </CardTitle>
-        <StatusBadge status={invoice.status} />
+        <div className="flex items-center gap-4">
+          <StatusBadge status={invoice.status} />
+          <DownloadInvoicePDF invoice={invoice} client={client} payments={payments} />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
