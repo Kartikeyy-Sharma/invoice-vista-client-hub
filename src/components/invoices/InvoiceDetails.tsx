@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Invoice, Client } from '@/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Client, Invoice, Payment } from '@/types';
 import StatusBadge from '../dashboard/StatusBadge';
 import { formatCurrency } from '@/lib/utils';
 import { CalendarIcon, FileText, IndianRupee, ClipboardList } from 'lucide-react';
